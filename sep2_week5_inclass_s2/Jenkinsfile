@@ -25,22 +25,26 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'mvn clean install'
+                dir('sep2_week5_inclass_s2') {
+                    bat 'mvn clean install'
+                }
             }
         }
 
         stage('SonarQube Analysis') {
                     steps {
-                        withSonarQubeEnv('SonarQubeServer') {
-                            bat """
-                                ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
-                                -Dsonar.projectKey=devops-demo ^
-                                -Dsonar.sources=src ^
-                                -Dsonar.projectName=DevOps-Demo ^
-                                -Dsonar.host.url=http://localhost:9000 ^
-                                -Dsonar.login=${env.SONAR_TOKEN} ^
-                                -Dsonar.java.binaries=target/classes
-                            """
+                        dir('sep2_week5_inclass_s2') {
+                            withSonarQubeEnv('SonarQubeServer') {
+                                bat """
+                                    ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+                                    -Dsonar.projectKey=devops-demo ^
+                                    -Dsonar.sources=src ^
+                                    -Dsonar.projectName=DevOps-Demo ^
+                                    -Dsonar.host.url=http://localhost:9000 ^
+                                    -Dsonar.login=${env.SONAR_TOKEN} ^
+                                    -Dsonar.java.binaries=target/classes
+                                """
+                            }
                         }
                     }
                 }
@@ -49,10 +53,12 @@ pipeline {
 
         stage('Build Docker Image') {
                     steps {
-                        script {
-                            docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
-                            // Or specify Dockerfile path explicitly if needed
-                            // docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}", "-f ./Dockerfile .")
+                        dir('sep2_week5_inclass_s2') {
+                            script {
+                                docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+                                // Or specify Dockerfile path explicitly if needed
+                                // docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}", "-f ./Dockerfile .")
+                            }
                         }
                     }
                 }
