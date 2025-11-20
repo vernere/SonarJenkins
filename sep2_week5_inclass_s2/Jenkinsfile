@@ -31,6 +31,30 @@ pipeline {
             }
         }
 
+        stage('Test & Coverage') {
+            steps {
+                dir('sep2_week5_inclass_s2') {
+                    bat 'mvn test'
+                }
+            }
+            post {
+                always {
+                    dir('sep2_week5_inclass_s2') {
+                        // Publish JUnit test results
+                        junit '**/target/surefire-reports/*.xml'
+                        
+                        // Publish JaCoCo coverage report
+                        jacoco(
+                            execPattern: '**/target/jacoco.exec',
+                            classPattern: '**/target/classes',
+                            sourcePattern: '**/src/main/java',
+                            exclusionPattern: '**/test/**'
+                        )
+                    }
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
                     steps {
                         dir('sep2_week5_inclass_s2') {
@@ -40,7 +64,8 @@ pipeline {
                                     -Dsonar.projectKey=devops-demo ^
                                     -Dsonar.projectName=DevOps-Demo ^
                                     -Dsonar.host.url=http://localhost:9000 ^
-                                    -Dsonar.login=${env.SONAR_TOKEN}
+                                    -Dsonar.login=${env.SONAR_TOKEN} ^
+                                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                                 """
                             }
                         }
